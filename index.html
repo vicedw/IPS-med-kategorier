@@ -510,7 +510,12 @@ createWheel({
   buttonId: "nameBtn",
   messageId: "nameMessage",
   resultId: "nameResult",
-  items: ["Victoria", "Ivar", "Line", "Caroline", "Hans", "Hanna"],
+ items: (() => {
+  const base = ["Victoria", "Ivar", "Line", "Caroline", "Hans", "Hanna"];
+  const arr = [];
+  for (let i = 0; i < 6; i++) arr.push(...base);
+  return arr;
+})(),
   colors: springColors,
   font: "bold 20px Arial"
 });
