@@ -1,544 +1,62 @@
-<!DOCTYPE html>
-<html lang="no">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Lykkehjul</title>
+function spin() {
+  if (spinning || isAnyWheelSpinning) return;
 
-<style>
-html, body {
-  margin: 0;
-  padding: 0;
-  min-height: 100%;
-  font-family: Arial, sans-serif;
-  overflow-x: hidden;
-}
+  spinning = true;
+  btn.disabled = true;
+  messageEl.textContent = "";
+  resultEl.textContent = "";
+  winningIndex = null;
+  drawWheel();
 
-body {
-  color: white;
-  background: linear-gradient(to bottom, #040814 0%, #0a1330 48%, #101d45 100%);
-}
+  // Victoria kan aldri velges
+  let possibleIndexes = items
+    .map((item, index) => ({ item, index }))
+    .filter(entry => entry.item !== "Victoria")
+    .map(entry => entry.index);
 
-.page {
-  min-height: 100vh;
-  padding: 24px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
+  const chosenIndex =
+    possibleIndexes[Math.floor(Math.random() * possibleIndexes.length)];
 
-h1 {
-  margin: 0 0 18px;
-  font-size: 34px;
-}
+  const winner = items[chosenIndex];
 
-.wheel-section {
-  text-align: center;
-  position: relative;
-  z-index: 2;
-}
+  const target = -chosenIndex * slice - slice / 2;
 
-.main-wheel {
-  width: 520px;
-  max-width: 90vw;
-}
+  let delta = normalize(target) - normalize(rotation);
+  if (delta < 0) delta += Math.PI * 2;
 
-.small-wheels {
-  display: flex;
-  gap: 32px;
-  justify-content: center;
-  align-items: flex-start;
-  margin-top: 26px;
-  flex-wrap: wrap;
-}
+  const duration = 8000;
+  const final = rotation + delta + 10 * Math.PI * 2;
+  const start = performance.now();
+  const startRot = rotation;
 
-.small-wheel {
-  width: 330px;
-  max-width: 90vw;
-}
+  startRouletteSound(duration);
 
-.wheel-wrap {
-  position: relative;
-  margin: 0 auto;
-}
+  function anim(now) {
+    let t = (now - start) / duration;
+    if (t > 1) t = 1;
 
-canvas.wheel {
-  width: 100%;
-  height: auto;
-  display: block;
-  border-radius: 50%;
-  background: transparent;
-  filter: drop-shadow(0 0 18px rgba(255,255,255,0.10));
-}
-
-.pointer {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 0;
-  height: 0;
-  border-left: 16px solid transparent;
-  border-right: 16px solid transparent;
-  border-top: 30px solid #f8fafc;
-  z-index: 4;
-  filter: drop-shadow(0 0 8px rgba(255,255,255,0.45));
-}
-
-button {
-  margin-top: 18px;
-  padding: 12px 28px;
-  border-radius: 999px;
-  border: none;
-  font-size: 17px;
-  font-weight: bold;
-  color: #1f2937;
-  background: linear-gradient(135deg, #7ed6a7, #8ccff8);
-  cursor: pointer;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.28);
-}
-
-button:disabled {
-  opacity: 0.72;
-  cursor: default;
-}
-
-.message {
-  margin-top: 12px;
-  font-size: 22px;
-  font-weight: 800;
-  min-height: 28px;
-}
-
-.result {
-  font-size: 26px;
-  font-weight: 800;
-  min-height: 32px;
-  color: #facc15;
-  text-shadow:
-    0 0 10px rgba(250,204,21,0.55),
-    0 0 20px rgba(250,204,21,0.35);
-}
-
-.small-wheel .message {
-  font-size: 18px;
-}
-
-.small-wheel .result {
-  font-size: 22px;
-}
-
-#confetti {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-</style>
-</head>
-
-<body>
-<canvas id="confetti"></canvas>
-
-<div class="page">
-  <h1>Lykkehjul</h1>
-
-  <div class="wheel-section main-wheel">
-    <div class="wheel-wrap">
-      <div class="pointer"></div>
-      <canvas id="nameWheel" class="wheel" width="560" height="560"></canvas>
-    </div>
-    <button id="nameBtn">Snurr navn</button>
-    <div class="message" id="nameMessage"></div>
-    <div class="result" id="nameResult"></div>
-  </div>
-
-  <div class="small-wheels">
-    <div class="wheel-section small-wheel">
-      <div class="wheel-wrap">
-        <div class="pointer"></div>
-        <canvas id="numberWheel" class="wheel" width="420" height="420"></canvas>
-      </div>
-      <button id="numberBtn">Snurr tall</button>
-      <div class="message" id="numberMessage"></div>
-      <div class="result" id="numberResult"></div>
-    </div>
-
-    <div class="wheel-section small-wheel">
-      <div class="wheel-wrap">
-        <div class="pointer"></div>
-        <canvas id="topicWheel" class="wheel" width="420" height="420"></canvas>
-      </div>
-      <button id="topicBtn">Snurr tema</button>
-      <div class="message" id="topicMessage"></div>
-      <div class="result" id="topicResult"></div>
-    </div>
-  </div>
-</div>
-
-<script>
-const confettiCanvas = document.getElementById("confetti");
-const confettiCtx = confettiCanvas.getContext("2d");
-
-function resizeConfetti() {
-  confettiCanvas.width = window.innerWidth;
-  confettiCanvas.height = window.innerHeight;
-}
-resizeConfetti();
-window.addEventListener("resize", resizeConfetti);
-
-let audioCtx = null;
-let tickTimer = null;
-let activeSpinStart = null;
-let activeSpinDuration = 8000;
-let isAnyWheelSpinning = false;
-
-function ensureAudioContext() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === "suspended") audioCtx.resume();
-}
-
-function playCasinoTick(volume = 0.025) {
-  if (!audioCtx) return;
-
-  const now = audioCtx.currentTime;
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  const filter = audioCtx.createBiquadFilter();
-
-  filter.type = "bandpass";
-  filter.frequency.value = 1500 + Math.random() * 350;
-  filter.Q.value = 5;
-
-  osc.type = "square";
-  osc.frequency.setValueAtTime(850 + Math.random() * 260, now);
-
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(volume, now + 0.004);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.045);
-
-  osc.connect(filter);
-  filter.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start(now);
-  osc.stop(now + 0.055);
-}
-
-function dynamicTickLoop() {
-  if (!isAnyWheelSpinning) return;
-
-  const elapsed = performance.now() - activeSpinStart;
-  const progress = Math.min(elapsed / activeSpinDuration, 1);
-
-  let interval;
-
-  if (progress < 0.18) {
-    interval = 140 - progress * 300;
-  } else if (progress < 0.62) {
-    interval = 55;
-  } else {
-    const slowPart = (progress - 0.62) / 0.38;
-    interval = 55 + slowPart * 210;
-  }
-
-  interval = Math.max(45, Math.min(interval, 280));
-  const volume = progress > 0.75 ? 0.03 : 0.022;
-
-  playCasinoTick(volume);
-  tickTimer = setTimeout(dynamicTickLoop, interval);
-}
-
-function startRouletteSound(duration) {
-  try {
-    ensureAudioContext();
-    if (tickTimer) clearTimeout(tickTimer);
-    activeSpinStart = performance.now();
-    activeSpinDuration = duration;
-    isAnyWheelSpinning = true;
-    dynamicTickLoop();
-  } catch (e) {
-    console.log("Kunne ikke starte lyd:", e);
-  }
-}
-
-function stopRouletteSound() {
-  isAnyWheelSpinning = false;
-  if (tickTimer) {
-    clearTimeout(tickTimer);
-    tickTimer = null;
-  }
-}
-
-function playVictorySound() {
-  try {
-    ensureAudioContext();
-
-    const now = audioCtx.currentTime;
-    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
-
-    notes.forEach((freq, i) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, now + i * 0.09);
-
-      gain.gain.setValueAtTime(0.0001, now + i * 0.09);
-      gain.gain.exponentialRampToValueAtTime(0.16, now + i * 0.09 + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.09 + 0.23);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.start(now + i * 0.09);
-      osc.stop(now + i * 0.09 + 0.25);
-    });
-  } catch (e) {
-    console.log("Kunne ikke spille seierslyd:", e);
-  }
-}
-
-const confettiPieces = [];
-
-function launchConfetti() {
-  confettiPieces.length = 0;
-
-  const confettiColors = [
-    "#facc15", "#fde68a", "#ffffff", "#c7e7ff", "#f8d2e2", "#cfeecf"
-  ];
-
-  for (let i = 0; i < 240; i++) {
-    confettiPieces.push({
-      x: Math.random() * confettiCanvas.width,
-      y: -20 - Math.random() * 220,
-      w: 5 + Math.random() * 8,
-      h: 7 + Math.random() * 10,
-      dx: -2.5 + Math.random() * 5,
-      dy: 2 + Math.random() * 5,
-      rot: Math.random() * Math.PI * 2,
-      drot: -0.25 + Math.random() * 0.5,
-      color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
-      life: 120 + Math.random() * 45
-    });
-  }
-
-  requestAnimationFrame(animateConfetti);
-}
-
-function animateConfetti() {
-  confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-  let alive = 0;
-
-  for (const p of confettiPieces) {
-    if (p.life <= 0) continue;
-
-    p.x += p.dx;
-    p.y += p.dy;
-    p.dy += 0.035;
-    p.rot += p.drot;
-    p.life--;
-
-    confettiCtx.save();
-    confettiCtx.translate(p.x, p.y);
-    confettiCtx.rotate(p.rot);
-    confettiCtx.fillStyle = p.color;
-    confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-    confettiCtx.restore();
-
-    if (p.y < confettiCanvas.height + 60 && p.life > 0) alive++;
-  }
-
-  if (alive > 0) {
-    requestAnimationFrame(animateConfetti);
-  } else {
-    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-  }
-}
-
-function normalize(a) {
-  const full = Math.PI * 2;
-  return ((a % full) + full) % full;
-}
-
-function easeOutCubic(t) {
-  return 1 - Math.pow(1 - t, 3);
-}
-
-function createWheel(config) {
-  const canvas = document.getElementById(config.canvasId);
-  const ctx = canvas.getContext("2d");
-  const btn = document.getElementById(config.buttonId);
-  const messageEl = document.getElementById(config.messageId);
-  const resultEl = document.getElementById(config.resultId);
-
-  const items = config.items;
-  const colors = config.colors;
-  const size = canvas.width;
-  const center = size / 2;
-  const radius = size * 0.48;
-  const slice = (Math.PI * 2) / items.length;
-
-  let rotation = 0;
-  let spinning = false;
-  let winningIndex = null;
-
-  function drawWheel() {
-    ctx.clearRect(0, 0, size, size);
-
-    for (let i = 0; i < items.length; i++) {
-      const start = rotation + i * slice - Math.PI / 2;
-      const end = start + slice;
-      const isWinner = i === winningIndex;
-
-      ctx.save();
-
-      if (isWinner) {
-        ctx.shadowColor = "rgba(250, 204, 21, 0.95)";
-        ctx.shadowBlur = size > 500 ? 30 : 22;
-      }
-
-      ctx.beginPath();
-      ctx.moveTo(center, center);
-      ctx.arc(center, center, radius, start, end);
-      ctx.closePath();
-      ctx.fillStyle = isWinner ? "#facc15" : colors[i % colors.length];
-      ctx.fill();
-
-      ctx.lineWidth = isWinner ? 4 : 1;
-      ctx.strokeStyle = isWinner ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)";
-      ctx.stroke();
-
-      ctx.restore();
-
-      ctx.save();
-      ctx.translate(center, center);
-      ctx.rotate(start + slice / 2);
-
-      ctx.textAlign = "right";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = isWinner ? "#111827" : "#1f2937";
-      ctx.font = config.font || "bold 13px Arial";
-
-      ctx.fillText(items[i], radius - 16, 0);
-      ctx.restore();
-    }
-
-    ctx.beginPath();
-    ctx.arc(center, center, size * 0.052, 0, Math.PI * 2);
-    ctx.fillStyle = "#f8fafc";
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(center, center, size * 0.018, 0, Math.PI * 2);
-    ctx.fillStyle = "#64748b";
-    ctx.fill();
-  }
-
-  function spin() {
-    if (spinning || isAnyWheelSpinning) return;
-
-    spinning = true;
-    btn.disabled = true;
-    messageEl.textContent = "";
-    resultEl.textContent = "";
-    winningIndex = null;
+    rotation = startRot + (final - startRot) * easeOutCubic(t);
     drawWheel();
 
-    const chosenIndex = Math.floor(Math.random() * items.length);
-    const winner = items[chosenIndex];
+    if (t < 1) {
+      requestAnimationFrame(anim);
+    } else {
+      rotation = normalize(final);
+      stopRouletteSound();
 
-    const target = -chosenIndex * slice - slice / 2;
-
-    let delta = normalize(target) - normalize(rotation);
-    if (delta < 0) delta += Math.PI * 2;
-
-    const duration = 8000;
-    const final = rotation + delta + 10 * Math.PI * 2;
-    const start = performance.now();
-    const startRot = rotation;
-
-    startRouletteSound(duration);
-
-    function anim(now) {
-      let t = (now - start) / duration;
-      if (t > 1) t = 1;
-
-      rotation = startRot + (final - startRot) * easeOutCubic(t);
+      winningIndex = chosenIndex;
       drawWheel();
 
-      if (t < 1) {
-        requestAnimationFrame(anim);
-      } else {
-        rotation = normalize(final);
-        stopRouletteSound();
+      messageEl.textContent = "Vi har en vinner!";
+      resultEl.textContent = winner;
 
-        winningIndex = chosenIndex;
-        drawWheel();
+      playVictorySound();
+      launchConfetti();
 
-        messageEl.textContent = "Vi har en vinner!";
-        resultEl.textContent = winner;
-
-        playVictorySound();
-        launchConfetti();
-
-        spinning = false;
-        btn.disabled = false;
-      }
+      spinning = false;
+      btn.disabled = false;
     }
-
-    requestAnimationFrame(anim);
   }
 
-  btn.addEventListener("click", spin);
-  drawWheel();
+  requestAnimationFrame(anim);
 }
-
-const springColors = [
-  "#cfeecf", "#ffdcb8", "#c7e7ff", "#f8d2e2",
-  "#fff0b8", "#d9d4ff", "#bff4e6", "#ffd6d6",
-  "#d8f3dc", "#fce7f3", "#bae6fd", "#fde68a",
-  "#ddd6fe", "#bbf7d0", "#fecaca", "#bfdbfe",
-  "#ccfbf1", "#e9d5ff", "#fed7aa", "#dcfce7"
-];
-
-createWheel({
-  canvasId: "nameWheel",
-  buttonId: "nameBtn",
-  messageId: "nameMessage",
-  resultId: "nameResult",
- items: (() => {
-  const base = ["Victoria", "Ivar", "Line", "Caroline", "Hans", "Hanna"];
-  const arr = [];
-  for (let i = 0; i < 6; i++) arr.push(...base);
-  return arr;
-})(),
-  colors: springColors,
-  font: "bold 20px Arial"
-});
-
-createWheel({
-  canvasId: "numberWheel",
-  buttonId: "numberBtn",
-  messageId: "numberMessage",
-  resultId: "numberResult",
-  items: Array.from({ length: 20 }, (_, i) => String(i + 1)),
-  colors: springColors,
-  font: "bold 15px Arial"
-});
-
-createWheel({
-  canvasId: "topicWheel",
-  buttonId: "topicBtn",
-  messageId: "topicMessage",
-  resultId: "topicResult",
-  items: ["Jobbstøtteplan", "Karriereprofil", "Åpenhet", "Økonomi", "Samarbeid", "Jobbutvikling"],
-  colors: springColors,
-  font: "bold 12px Arial"
-});
-</script>
-</body>
-</html>
