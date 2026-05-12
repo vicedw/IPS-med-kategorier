@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Lykkehjul</title>
+<title>Ukens jobbspor i IPS Midt-Buskerud</title>
 
 <style>
 html, body {
@@ -31,6 +31,7 @@ body {
 h1 {
   margin: 0 0 18px;
   font-size: 34px;
+  text-align: center;
 }
 
 .wheel-section {
@@ -167,7 +168,7 @@ button:disabled {
 
 <div class="page">
 
-  <h1>Lykkehjul</h1>
+  <h1>Ukens jobbspor i IPS Midt-Buskerud</h1>
 
   <div class="wheel-section main-wheel">
 
@@ -245,6 +246,7 @@ button:disabled {
 </div>
 
 <script>
+
 const confettiCanvas = document.getElementById("confetti");
 const confettiCtx = confettiCanvas.getContext("2d");
 
@@ -252,26 +254,32 @@ function resizeConfetti() {
   confettiCanvas.width = window.innerWidth;
   confettiCanvas.height = window.innerHeight;
 }
+
 resizeConfetti();
 window.addEventListener("resize", resizeConfetti);
 
 let audioCtx = null;
 let tickTimer = null;
 let activeSpinStart = null;
-let activeSpinDuration = 8000;
+let activeSpinDuration = 5000;
 let isAnyWheelSpinning = false;
 
 function ensureAudioContext() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
-  if (audioCtx.state === "suspended") audioCtx.resume();
+
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
 }
 
 function playCasinoTick(volume = 0.025) {
+
   if (!audioCtx) return;
 
   const now = audioCtx.currentTime;
+
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   const filter = audioCtx.createBiquadFilter();
@@ -296,6 +304,7 @@ function playCasinoTick(volume = 0.025) {
 }
 
 function dynamicTickLoop() {
+
   if (!isAnyWheelSpinning) return;
 
   const elapsed = performance.now() - activeSpinStart;
@@ -313,27 +322,32 @@ function dynamicTickLoop() {
   }
 
   interval = Math.max(45, Math.min(interval, 280));
+
   const volume = progress > 0.75 ? 0.03 : 0.022;
 
   playCasinoTick(volume);
+
   tickTimer = setTimeout(dynamicTickLoop, interval);
 }
 
 function startRouletteSound(duration) {
-  try {
-    ensureAudioContext();
-    if (tickTimer) clearTimeout(tickTimer);
-    activeSpinStart = performance.now();
-    activeSpinDuration = duration;
-    isAnyWheelSpinning = true;
-    dynamicTickLoop();
-  } catch (e) {
-    console.log("Kunne ikke starte lyd:", e);
-  }
+
+  ensureAudioContext();
+
+  if (tickTimer) clearTimeout(tickTimer);
+
+  activeSpinStart = performance.now();
+  activeSpinDuration = duration;
+
+  isAnyWheelSpinning = true;
+
+  dynamicTickLoop();
 }
 
 function stopRouletteSound() {
+
   isAnyWheelSpinning = false;
+
   if (tickTimer) {
     clearTimeout(tickTimer);
     tickTimer = null;
@@ -341,44 +355,50 @@ function stopRouletteSound() {
 }
 
 function playVictorySound() {
-  try {
-    ensureAudioContext();
 
-    const now = audioCtx.currentTime;
-    const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
+  ensureAudioContext();
 
-    notes.forEach((freq, i) => {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
+  const now = audioCtx.currentTime;
 
-      osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, now + i * 0.09);
+  const notes = [523.25, 659.25, 783.99, 1046.50, 1318.51];
 
-      gain.gain.setValueAtTime(0.0001, now + i * 0.09);
-      gain.gain.exponentialRampToValueAtTime(0.16, now + i * 0.09 + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.09 + 0.23);
+  notes.forEach((freq, i) => {
 
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
 
-      osc.start(now + i * 0.09);
-      osc.stop(now + i * 0.09 + 0.25);
-    });
-  } catch (e) {
-    console.log("Kunne ikke spille seierslyd:", e);
-  }
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(freq, now + i * 0.09);
+
+    gain.gain.setValueAtTime(0.0001, now + i * 0.09);
+    gain.gain.exponentialRampToValueAtTime(0.16, now + i * 0.09 + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.09 + 0.23);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start(now + i * 0.09);
+    osc.stop(now + i * 0.09 + 0.25);
+  });
 }
 
 const confettiPieces = [];
 
 function launchConfetti() {
+
   confettiPieces.length = 0;
 
   const confettiColors = [
-    "#facc15", "#fde68a", "#ffffff", "#c7e7ff", "#f8d2e2", "#cfeecf"
+    "#facc15",
+    "#fde68a",
+    "#ffffff",
+    "#c7e7ff",
+    "#f8d2e2",
+    "#cfeecf"
   ];
 
   for (let i = 0; i < 240; i++) {
+
     confettiPieces.push({
       x: Math.random() * confettiCanvas.width,
       y: -20 - Math.random() * 220,
@@ -397,10 +417,13 @@ function launchConfetti() {
 }
 
 function animateConfetti() {
+
   confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+
   let alive = 0;
 
   for (const p of confettiPieces) {
+
     if (p.life <= 0) continue;
 
     p.x += p.dx;
@@ -410,24 +433,30 @@ function animateConfetti() {
     p.life--;
 
     confettiCtx.save();
+
     confettiCtx.translate(p.x, p.y);
     confettiCtx.rotate(p.rot);
+
     confettiCtx.fillStyle = p.color;
+
     confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+
     confettiCtx.restore();
 
-    if (p.y < confettiCanvas.height + 60 && p.life > 0) alive++;
+    if (p.y < confettiCanvas.height + 60 && p.life > 0) {
+      alive++;
+    }
   }
 
   if (alive > 0) {
     requestAnimationFrame(animateConfetti);
-  } else {
-    confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
   }
 }
 
 function normalize(a) {
+
   const full = Math.PI * 2;
+
   return ((a % full) + full) % full;
 }
 
@@ -436,17 +465,22 @@ function easeOutCubic(t) {
 }
 
 function createWheel(config) {
+
   const canvas = document.getElementById(config.canvasId);
   const ctx = canvas.getContext("2d");
+
   const btn = document.getElementById(config.buttonId);
+
   const messageEl = document.getElementById(config.messageId);
   const resultEl = document.getElementById(config.resultId);
 
   const items = config.items;
   const colors = config.colors;
+
   const size = canvas.width;
   const center = size / 2;
   const radius = size * 0.48;
+
   const slice = (Math.PI * 2) / items.length;
 
   let rotation = 0;
@@ -454,11 +488,14 @@ function createWheel(config) {
   let winningIndex = null;
 
   function drawWheel() {
+
     ctx.clearRect(0, 0, size, size);
 
     for (let i = 0; i < items.length; i++) {
+
       const start = rotation + i * slice - Math.PI / 2;
       const end = start + slice;
+
       const isWinner = i === winningIndex;
 
       ctx.save();
@@ -472,55 +509,83 @@ function createWheel(config) {
       ctx.moveTo(center, center);
       ctx.arc(center, center, radius, start, end);
       ctx.closePath();
-      ctx.fillStyle = isWinner ? "#facc15" : colors[i % colors.length];
+
+      ctx.fillStyle = isWinner
+        ? "#facc15"
+        : colors[i % colors.length];
+
       ctx.fill();
 
       ctx.lineWidth = isWinner ? 4 : 1;
-      ctx.strokeStyle = isWinner ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)";
+
+      ctx.strokeStyle = isWinner
+        ? "rgba(255,255,255,0.95)"
+        : "rgba(255,255,255,0.35)";
+
       ctx.stroke();
 
       ctx.restore();
 
       ctx.save();
+
       ctx.translate(center, center);
       ctx.rotate(start + slice / 2);
 
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = isWinner ? "#111827" : "#1f2937";
+
+      ctx.fillStyle = isWinner
+        ? "#111827"
+        : "#1f2937";
+
       ctx.font = config.font || "bold 13px Arial";
 
       ctx.fillText(items[i], radius - 16, 0);
+
       ctx.restore();
     }
 
     ctx.beginPath();
+
     ctx.arc(center, center, size * 0.052, 0, Math.PI * 2);
+
     ctx.fillStyle = "#f8fafc";
     ctx.fill();
 
     ctx.beginPath();
+
     ctx.arc(center, center, size * 0.018, 0, Math.PI * 2);
+
     ctx.fillStyle = "#64748b";
     ctx.fill();
   }
 
   function spin() {
+
     if (spinning || isAnyWheelSpinning) return;
 
     spinning = true;
+
     btn.disabled = true;
+
     messageEl.textContent = "";
     resultEl.textContent = "";
+
     winningIndex = null;
+
     drawWheel();
 
     let availableIndexes = items
       .map((item, index) => ({ item, index }))
       .filter(entry => {
-        if (config.canvasId !== "nameWheel") return true;
 
-        const input = document.getElementById("excludedInput").value;
+        if (config.canvasId !== "nameWheel") {
+          return true;
+        }
+
+        const input = document
+          .getElementById("excludedInput")
+          .value;
 
         const excludedNames = input
           .split(",")
@@ -539,44 +604,70 @@ function createWheel(config) {
       return;
     }
 
-    const chosenIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+    const chosenIndex =
+      availableIndexes[
+        Math.floor(Math.random() * availableIndexes.length)
+      ];
+
     const winner = items[chosenIndex];
 
-    const target = -chosenIndex * slice - slice / 2;
+    const target =
+      -chosenIndex * slice - slice / 2;
 
-    let delta = normalize(target) - normalize(rotation);
-    if (delta < 0) delta += Math.PI * 2;
+    let delta =
+      normalize(target) - normalize(rotation);
 
-    const duration = 8000;
-    const final = rotation + delta + 10 * Math.PI * 2;
+    if (delta < 0) {
+      delta += Math.PI * 2;
+    }
+
+    const duration = 5000;
+
+    const final =
+      rotation + delta + 10 * Math.PI * 2;
+
     const start = performance.now();
     const startRot = rotation;
 
     startRouletteSound(duration);
 
     function anim(now) {
+
       let t = (now - start) / duration;
+
       if (t > 1) t = 1;
 
-      rotation = startRot + (final - startRot) * easeOutCubic(t);
+      rotation =
+        startRot +
+        (final - startRot) * easeOutCubic(t);
+
       drawWheel();
 
       if (t < 1) {
+
         requestAnimationFrame(anim);
+
       } else {
+
         rotation = normalize(final);
+
         stopRouletteSound();
 
         winningIndex = chosenIndex;
+
         drawWheel();
 
-        messageEl.textContent = "Vi har en vinner!";
+        messageEl.textContent =
+          "Vi har en vinner!";
+
         resultEl.textContent = winner;
 
         playVictorySound();
+
         launchConfetti();
 
         spinning = false;
+
         btn.disabled = false;
       }
     }
@@ -585,15 +676,31 @@ function createWheel(config) {
   }
 
   btn.addEventListener("click", spin);
+
   drawWheel();
 }
 
 const springColors = [
-  "#cfeecf", "#ffdcb8", "#c7e7ff", "#f8d2e2",
-  "#fff0b8", "#d9d4ff", "#bff4e6", "#ffd6d6",
-  "#d8f3dc", "#fce7f3", "#bae6fd", "#fde68a",
-  "#ddd6fe", "#bbf7d0", "#fecaca", "#bfdbfe",
-  "#ccfbf1", "#e9d5ff", "#fed7aa", "#dcfce7"
+  "#cfeecf",
+  "#ffdcb8",
+  "#c7e7ff",
+  "#f8d2e2",
+  "#fff0b8",
+  "#d9d4ff",
+  "#bff4e6",
+  "#ffd6d6",
+  "#d8f3dc",
+  "#fce7f3",
+  "#bae6fd",
+  "#fde68a",
+  "#ddd6fe",
+  "#bbf7d0",
+  "#fecaca",
+  "#bfdbfe",
+  "#ccfbf1",
+  "#e9d5ff",
+  "#fed7aa",
+  "#dcfce7"
 ];
 
 createWheel({
@@ -601,13 +708,29 @@ createWheel({
   buttonId: "nameBtn",
   messageId: "nameMessage",
   resultId: "nameResult",
+
   items: (() => {
-    const base = ["Victoria", "Ivar", "Line", "Caroline", "Hans", "Hanna"];
+
+    const base = [
+      "Victoria",
+      "Ivar",
+      "Line",
+      "Caroline",
+      "Hans",
+      "Hanna"
+    ];
+
     const arr = [];
-    for (let i = 0; i < 6; i++) arr.push(...base);
+
+    for (let i = 0; i < 6; i++) {
+      arr.push(...base);
+    }
+
     return arr;
   })(),
+
   colors: springColors,
+
   font: "bold 20px Arial"
 });
 
@@ -616,18 +739,37 @@ createWheel({
   buttonId: "topicBtn",
   messageId: "topicMessage",
   resultId: "topicResult",
-  items: ["Jobbstøtteplan", "Karriereprofil", "Åpenhet", "Økonomi", "Samarbeid", "Jobbutvikling"],
+
+  items: [
+    "Jobbstøtteplan",
+    "Karriereprofil",
+    "Åpenhet",
+    "Økonomi",
+    "Samarbeid",
+    "Jobbutvikling"
+  ],
+
   colors: springColors,
+
   font: "bold 12px Arial"
 });
 
-const randomNumberBtn = document.getElementById("randomNumberBtn");
-const randomNumberMessage = document.getElementById("randomNumberMessage");
-const randomNumberResult = document.getElementById("randomNumberResult");
+const randomNumberBtn =
+  document.getElementById("randomNumberBtn");
+
+const randomNumberMessage =
+  document.getElementById("randomNumberMessage");
+
+const randomNumberResult =
+  document.getElementById("randomNumberResult");
 
 randomNumberBtn.addEventListener("click", () => {
-  let min = Number(document.getElementById("minNumber").value);
-  let max = Number(document.getElementById("maxNumber").value);
+
+  let min =
+    Number(document.getElementById("minNumber").value);
+
+  let max =
+    Number(document.getElementById("maxNumber").value);
 
   min = Math.max(1, Math.min(25, min));
   max = Math.max(1, Math.min(25, max));
@@ -641,15 +783,19 @@ randomNumberBtn.addEventListener("click", () => {
   document.getElementById("minNumber").value = min;
   document.getElementById("maxNumber").value = max;
 
-  const number = Math.floor(Math.random() * (max - min + 1)) + min;
+  const number =
+    Math.floor(Math.random() * (max - min + 1)) + min;
 
-  randomNumberMessage.textContent = "Tilfeldig tall:";
+  randomNumberMessage.textContent =
+    "Tilfeldig tall:";
+
   randomNumberResult.textContent = number;
 
   playVictorySound();
+
   launchConfetti();
 });
-</script>
 
+</script>
 </body>
 </html>
