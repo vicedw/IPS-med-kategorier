@@ -227,11 +227,11 @@ button:disabled {
 
     </div>
 
-    <div class="wheel-section small-wheel">
+    <div class="wheel-section main-wheel">
 
       <div class="wheel-wrap">
         <div class="pointer"></div>
-        <canvas id="topicWheel" class="wheel" width="420" height="420"></canvas>
+        <canvas id="topicWheel" class="wheel" width="560" height="560"></canvas>
       </div>
 
       <button id="topicBtn">Snurr tema</button>
@@ -277,6 +277,7 @@ function playCasinoTick(volume = 0.025) {
   if (!audioCtx) return;
 
   const now = audioCtx.currentTime;
+
   const osc = audioCtx.createOscillator();
   const gain = audioCtx.createGain();
   const filter = audioCtx.createBiquadFilter();
@@ -477,25 +478,36 @@ function createWheel(config) {
       ctx.moveTo(center, center);
       ctx.arc(center, center, radius, start, end);
       ctx.closePath();
+
       ctx.fillStyle = isWinner ? "#facc15" : colors[i % colors.length];
       ctx.fill();
 
       ctx.lineWidth = isWinner ? 4 : 1;
-      ctx.strokeStyle = isWinner ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.35)";
+
+      ctx.strokeStyle = isWinner
+        ? "rgba(255,255,255,0.95)"
+        : "rgba(255,255,255,0.35)";
+
       ctx.stroke();
 
       ctx.restore();
 
       ctx.save();
+
       ctx.translate(center, center);
       ctx.rotate(start + slice / 2);
 
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
-      ctx.fillStyle = isWinner ? "#111827" : "#1f2937";
+
+      ctx.fillStyle = isWinner
+        ? "#111827"
+        : "#1f2937";
+
       ctx.font = config.font || "bold 13px Arial";
 
       ctx.fillText(items[i], radius - 16, 0);
+
       ctx.restore();
     }
 
@@ -517,24 +529,30 @@ function createWheel(config) {
     btn.disabled = true;
     messageEl.textContent = "";
     resultEl.textContent = "";
+
     winningIndex = null;
+
     drawWheel();
 
     let availableIndexes = items
       .map((item, index) => ({ item, index }))
       .filter(entry => {
+
         if (config.canvasId !== "nameWheel") {
           return true;
         }
 
-        const input = document.getElementById("excludedInput").value;
+        const input =
+          document.getElementById("excludedInput").value;
 
         const excludedNames = input
           .split(",")
           .map(n => n.trim())
           .filter(n => n.length > 0);
 
-        return entry.item !== "Victoria" && !excludedNames.includes(entry.item);
+        return entry.item !== "Victoria"
+          && !excludedNames.includes(entry.item);
+
       })
       .map(entry => entry.index);
 
@@ -546,48 +564,70 @@ function createWheel(config) {
       return;
     }
 
-    const chosenIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
+    const chosenIndex =
+      availableIndexes[
+        Math.floor(Math.random() * availableIndexes.length)
+      ];
+
     const winner = items[chosenIndex];
 
-    const target = -chosenIndex * slice - slice / 2;
+    const target =
+      -chosenIndex * slice - slice / 2;
 
-    let delta = normalize(target) - normalize(rotation);
+    let delta =
+      normalize(target) - normalize(rotation);
 
     if (delta < 0) {
       delta += Math.PI * 2;
     }
 
     const duration = 5000;
-    const final = rotation + delta + 10 * Math.PI * 2;
+
+    const final =
+      rotation + delta + 10 * Math.PI * 2;
+
     const start = performance.now();
     const startRot = rotation;
 
     startRouletteSound(duration);
 
     function anim(now) {
+
       let t = (now - start) / duration;
 
       if (t > 1) t = 1;
 
-      rotation = startRot + (final - startRot) * easeOutCubic(t);
+      rotation =
+        startRot +
+        (final - startRot) * easeOutCubic(t);
+
       drawWheel();
 
       if (t < 1) {
+
         requestAnimationFrame(anim);
+
       } else {
+
         rotation = normalize(final);
+
         stopRouletteSound();
 
         winningIndex = chosenIndex;
+
         drawWheel();
 
-        messageEl.textContent = "Vi har en vinner!";
+        messageEl.textContent =
+          "Vi har en vinner!";
+
         resultEl.textContent = winner;
 
         playVictorySound();
+
         launchConfetti();
 
         spinning = false;
+
         btn.disabled = false;
       }
     }
@@ -596,6 +636,7 @@ function createWheel(config) {
   }
 
   btn.addEventListener("click", spin);
+
   drawWheel();
 }
 
@@ -612,8 +653,18 @@ createWheel({
   buttonId: "nameBtn",
   messageId: "nameMessage",
   resultId: "nameResult",
+
   items: (() => {
-    const base = ["Victoria", "Ivar", "Line", "Caroline", "Hans", "Hanna"];
+
+    const base = [
+      "Victoria",
+      "Ivar",
+      "Line",
+      "Caroline",
+      "Hans",
+      "Hanna"
+    ];
+
     const arr = [];
 
     for (let i = 0; i < 6; i++) {
@@ -622,7 +673,9 @@ createWheel({
 
     return arr;
   })(),
+
   colors: springColors,
+
   font: "bold 20px Arial"
 });
 
@@ -631,7 +684,9 @@ createWheel({
   buttonId: "topicBtn",
   messageId: "topicMessage",
   resultId: "topicResult",
+
   items: (() => {
+
     const base = [
       "Jobbstøtteplan",
       "Karriereprofil",
@@ -648,18 +703,30 @@ createWheel({
     }
 
     return arr;
+
   })(),
+
   colors: springColors,
+
   font: "bold 10px Arial"
 });
 
-const randomNumberBtn = document.getElementById("randomNumberBtn");
-const randomNumberMessage = document.getElementById("randomNumberMessage");
-const randomNumberResult = document.getElementById("randomNumberResult");
+const randomNumberBtn =
+  document.getElementById("randomNumberBtn");
+
+const randomNumberMessage =
+  document.getElementById("randomNumberMessage");
+
+const randomNumberResult =
+  document.getElementById("randomNumberResult");
 
 randomNumberBtn.addEventListener("click", () => {
-  let min = Number(document.getElementById("minNumber").value);
-  let max = Number(document.getElementById("maxNumber").value);
+
+  let min =
+    Number(document.getElementById("minNumber").value);
+
+  let max =
+    Number(document.getElementById("maxNumber").value);
 
   min = Math.max(1, Math.min(25, min));
   max = Math.max(1, Math.min(25, max));
@@ -673,14 +740,19 @@ randomNumberBtn.addEventListener("click", () => {
   document.getElementById("minNumber").value = min;
   document.getElementById("maxNumber").value = max;
 
-  const number = Math.floor(Math.random() * (max - min + 1)) + min;
+  const number =
+    Math.floor(Math.random() * (max - min + 1)) + min;
 
-  randomNumberMessage.textContent = "Tilfeldig tall:";
+  randomNumberMessage.textContent =
+    "Tilfeldig tall:";
+
   randomNumberResult.textContent = number;
 
   playVictorySound();
+
   launchConfetti();
 });
+
 </script>
 
 </body>
