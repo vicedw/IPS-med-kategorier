@@ -34,12 +34,13 @@ h1 {
   text-align: center;
 }
 
-.name-area {
+.wheels-row {
   display: flex;
-  gap: 28px;
+  gap: 42px;
   justify-content: center;
   align-items: flex-start;
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .wheel-section {
@@ -53,13 +54,23 @@ h1 {
   max-width: 90vw;
 }
 
-.small-wheels {
+.middle-row {
+  width: 100%;
   display: flex;
-  gap: 32px;
   justify-content: center;
-  align-items: flex-start;
-  margin-top: 26px;
-  flex-wrap: wrap;
+  margin-top: 24px;
+}
+
+.random-card {
+  width: 360px;
+  max-width: 90vw;
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 22px;
+  padding: 20px 22px 22px;
+  box-sizing: border-box;
+  text-align: center;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.22);
 }
 
 .small-wheel {
@@ -155,7 +166,7 @@ button:disabled {
 }
 
 .side-panel {
-  width: 300px;
+  width: min(900px, 94vw);
   max-width: 90vw;
   background: rgba(15, 23, 42, 0.62);
   border: 1px solid rgba(255,255,255,0.15);
@@ -164,10 +175,14 @@ button:disabled {
   box-sizing: border-box;
   text-align: left;
   box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
 .panel-section + .panel-section {
-  margin-top: 18px;
+  margin-top: 0;
 }
 
 .panel-title {
@@ -260,13 +275,15 @@ button:disabled {
 }
 
 @media (max-width: 980px) {
-  .name-area {
+  .wheels-row {
     flex-direction: column;
     align-items: center;
+    gap: 28px;
   }
 
   .side-panel {
-    width: 520px;
+    width: min(520px, 94vw);
+    grid-template-columns: 1fr;
   }
 }
 </style>
@@ -280,7 +297,7 @@ button:disabled {
 
   <h1>Ukens jobbspor i IPS Midt-Buskerud</h1>
 
-  <div class="name-area">
+  <div class="wheels-row">
     <div class="wheel-section main-wheel">
 
       <div class="wheel-wrap">
@@ -292,61 +309,6 @@ button:disabled {
 
       <div class="message" id="nameMessage"></div>
       <div class="result" id="nameResult"></div>
-
-    </div>
-
-    <div class="side-panel">
-      <div class="panel-section">
-        <div class="panel-title">
-          <h2>Fravær</h2>
-        </div>
-        <div class="hint">Huk av navn som ikke skal kunne trekkes akkurat nå.</div>
-        <div class="check-list" id="absenceList"></div>
-      </div>
-
-      <div class="panel-section">
-        <div class="panel-title">
-          <h2>Gjennomført</h2>
-          <div class="counter" id="completedCounter"></div>
-        </div>
-        <div class="hint">Navn som trekkes, flyttes hit og fjernes fra hjulet. Klikk × for å legge tilbake.</div>
-        <div class="done-list" id="completedList"></div>
-        <div class="panel-buttons">
-          <button class="secondary" id="undoNameBtn" type="button">Angre siste</button>
-          <button class="warning" id="newNameRoundBtn" type="button">Start ny runde</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="small-wheels">
-
-    <div class="wheel-section small-wheel">
-
-      <div style="margin-top:40px;">
-
-        <div style="font-size:22px; font-weight:bold; margin-bottom:18px;">
-          Tilfeldig tall
-        </div>
-
-        <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:18px;">
-
-          <input id="minNumber" type="number" min="1" max="25" value="1"
-            style="width:70px; padding:10px; border-radius:999px; border:none; text-align:center; font-size:18px;">
-
-          <span>til</span>
-
-          <input id="maxNumber" type="number" min="1" max="25" value="25"
-            style="width:70px; padding:10px; border-radius:999px; border:none; text-align:center; font-size:18px;">
-
-        </div>
-
-        <button id="randomNumberBtn">Velg tall</button>
-
-        <div class="message" id="randomNumberMessage"></div>
-        <div class="result" id="randomNumberResult"></div>
-
-      </div>
 
     </div>
 
@@ -363,7 +325,56 @@ button:disabled {
       <div class="result" id="topicResult"></div>
 
     </div>
+  </div>
 
+  <div class="middle-row">
+    <div class="wheel-section random-card">
+
+      <div style="font-size:22px; font-weight:bold; margin-bottom:18px;">
+        Tilfeldig tall
+      </div>
+
+      <div style="display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:18px;">
+
+        <input id="minNumber" type="number" min="1" max="25" value="1"
+          style="width:70px; padding:10px; border-radius:999px; border:none; text-align:center; font-size:18px;">
+
+        <span>til</span>
+
+        <input id="maxNumber" type="number" min="1" max="25" value="25"
+          style="width:70px; padding:10px; border-radius:999px; border:none; text-align:center; font-size:18px;">
+
+      </div>
+
+      <button id="randomNumberBtn">Velg tall</button>
+
+      <div class="message" id="randomNumberMessage"></div>
+      <div class="result" id="randomNumberResult"></div>
+
+    </div>
+  </div>
+
+  <div class="side-panel">
+    <div class="panel-section">
+      <div class="panel-title">
+        <h2>Fravær</h2>
+      </div>
+      <div class="hint">Huk av navn som ikke skal kunne trekkes akkurat nå.</div>
+      <div class="check-list" id="absenceList"></div>
+    </div>
+
+    <div class="panel-section">
+      <div class="panel-title">
+        <h2>Gjennomført</h2>
+        <div class="counter" id="completedCounter"></div>
+      </div>
+      <div class="hint">Navn som trekkes, flyttes hit og fjernes fra hjulet. Klikk × for å legge tilbake.</div>
+      <div class="done-list" id="completedList"></div>
+      <div class="panel-buttons">
+        <button class="secondary" id="undoNameBtn" type="button">Angre siste</button>
+        <button class="warning" id="newNameRoundBtn" type="button">Start ny runde</button>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -795,15 +806,15 @@ const springColors = [
 ];
 
 const nameBase = [
-  "Caroline",
-  "Hanna",
-  "Hans",
+  "Victoria",
   "Ivar",
   "Line",
-  "Victoria"
+  "Caroline",
+  "Hans",
+  "Hanna"
 ];
 
-const repeatedNameItems = makeRepeatedItems(nameBase, 5);
+const repeatedNameItems = makeRepeatedItems(nameBase, 6);
 const nameStorageKey = "ips-lykkehjul-gjennomfort-navn-v1";
 
 let completedNames = [];
@@ -999,7 +1010,7 @@ createWheel({
     "Økonomi",
     "Samarbeid",
     "Jobbutvikling"
-  ], 3),
+  ], 4),
   preventSameConsecutive: true,
   colors: springColors,
   font: "bold 15px Arial"
