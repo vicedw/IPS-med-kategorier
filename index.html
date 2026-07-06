@@ -34,6 +34,14 @@ h1 {
   text-align: center;
 }
 
+.name-area {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
 .wheel-section {
   text-align: center;
   position: relative;
@@ -100,6 +108,22 @@ button {
   box-shadow: 0 8px 22px rgba(0,0,0,0.28);
 }
 
+button.secondary {
+  margin-top: 0;
+  padding: 9px 14px;
+  font-size: 13px;
+  background: rgba(248, 250, 252, 0.92);
+  box-shadow: 0 5px 14px rgba(0,0,0,0.18);
+}
+
+button.warning {
+  margin-top: 0;
+  padding: 9px 14px;
+  font-size: 13px;
+  background: #fecaca;
+  box-shadow: 0 5px 14px rgba(0,0,0,0.18);
+}
+
 button:disabled {
   opacity: 0.72;
   cursor: default;
@@ -130,6 +154,104 @@ button:disabled {
   font-size: 22px;
 }
 
+.side-panel {
+  width: 300px;
+  max-width: 90vw;
+  background: rgba(15, 23, 42, 0.62);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 22px;
+  padding: 16px;
+  box-sizing: border-box;
+  text-align: left;
+  box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+}
+
+.panel-section + .panel-section {
+  margin-top: 18px;
+}
+
+.panel-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.panel-title h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.counter {
+  font-size: 13px;
+  color: rgba(255,255,255,0.78);
+}
+
+.hint {
+  font-size: 13px;
+  color: rgba(255,255,255,0.76);
+  line-height: 1.35;
+  margin-bottom: 10px;
+}
+
+.check-list, .done-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.check-item, .done-item, .empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.10);
+  padding: 9px 10px;
+  font-size: 15px;
+}
+
+.check-item label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.check-item input {
+  width: 18px;
+  height: 18px;
+  accent-color: #7ed6a7;
+}
+
+.done-item button {
+  margin: 0;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 50%;
+  box-shadow: none;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 17px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+.empty-state {
+  color: rgba(255,255,255,0.74);
+  justify-content: center;
+}
+
+.panel-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
 #confetti {
   position: fixed;
   inset: 0;
@@ -137,27 +259,15 @@ button:disabled {
   z-index: 1;
 }
 
-.exclude-box {
-  margin-top: 14px;
-}
+@media (max-width: 980px) {
+  .name-area {
+    flex-direction: column;
+    align-items: center;
+  }
 
-.exclude-box input {
-  width: 300px;
-  max-width: 80vw;
-  padding: 10px 16px;
-  border-radius: 999px;
-  border: none;
-  outline: none;
-  font-size: 15px;
-  text-align: center;
-  background: rgba(255,255,255,0.92);
-  color: #111827;
-}
-
-.exclude-label {
-  margin-top: 10px;
-  font-size: 14px;
-  opacity: 0.85;
+  .side-panel {
+    width: 520px;
+  }
 }
 </style>
 </head>
@@ -170,30 +280,43 @@ button:disabled {
 
   <h1>Ukens jobbspor i IPS Midt-Buskerud</h1>
 
-  <div class="wheel-section main-wheel">
+  <div class="name-area">
+    <div class="wheel-section main-wheel">
 
-    <div class="wheel-wrap">
-      <div class="pointer"></div>
-      <canvas id="nameWheel" class="wheel" width="560" height="560"></canvas>
+      <div class="wheel-wrap">
+        <div class="pointer"></div>
+        <canvas id="nameWheel" class="wheel" width="560" height="560"></canvas>
+      </div>
+
+      <button id="nameBtn">Snurr navn</button>
+
+      <div class="message" id="nameMessage"></div>
+      <div class="result" id="nameResult"></div>
+
     </div>
 
-    <button id="nameBtn">Snurr navn</button>
+    <div class="side-panel">
+      <div class="panel-section">
+        <div class="panel-title">
+          <h2>Fravær</h2>
+        </div>
+        <div class="hint">Huk av navn som ikke skal kunne trekkes akkurat nå.</div>
+        <div class="check-list" id="absenceList"></div>
+      </div>
 
-    <div class="exclude-box">
-      <input 
-        id="excludedInput"
-        type="text"
-        placeholder="Fraværende"
-      />
+      <div class="panel-section">
+        <div class="panel-title">
+          <h2>Gjennomført</h2>
+          <div class="counter" id="completedCounter"></div>
+        </div>
+        <div class="hint">Navn som trekkes, flyttes hit og fjernes fra hjulet. Klikk × for å legge tilbake.</div>
+        <div class="done-list" id="completedList"></div>
+        <div class="panel-buttons">
+          <button class="secondary" id="undoNameBtn" type="button">Angre siste</button>
+          <button class="warning" id="newNameRoundBtn" type="button">Start ny runde</button>
+        </div>
+      </div>
     </div>
-
-    <div class="exclude-label">
-      Navn skilles med komma
-    </div>
-
-    <div class="message" id="nameMessage"></div>
-    <div class="result" id="nameResult"></div>
-
   </div>
 
   <div class="small-wheels">
@@ -441,6 +564,18 @@ function easeOutCubic(t) {
   return 1 - Math.pow(1 - t, 3);
 }
 
+function normalizeName(name) {
+  return String(name).trim().toLowerCase();
+}
+
+function makeRepeatedItems(baseItems, repeats) {
+  const items = [];
+  for (let i = 0; i < repeats; i++) {
+    items.push(...baseItems);
+  }
+  return items;
+}
+
 function createWheel(config) {
   const canvas = document.getElementById(config.canvasId);
   const ctx = canvas.getContext("2d");
@@ -448,18 +583,50 @@ function createWheel(config) {
   const messageEl = document.getElementById(config.messageId);
   const resultEl = document.getElementById(config.resultId);
 
-  const items = config.items;
+  const originalItems = config.items;
   const colors = config.colors;
   const size = canvas.width;
   const center = size / 2;
   const radius = size * 0.48;
-  const slice = (Math.PI * 2) / items.length;
 
   let rotation = 0;
   let spinning = false;
   let winningIndex = null;
+  let lastWinningValue = null;
+
+  function getItems() {
+    if (typeof config.getItems === "function") {
+      return config.getItems();
+    }
+    return originalItems;
+  }
+
+  function drawEmptyWheel(text) {
+    ctx.clearRect(0, 0, size, size);
+    ctx.beginPath();
+    ctx.arc(center, center, radius, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255,0.12)";
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255,255,255,0.35)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,255,255,0.82)";
+    ctx.font = "bold 24px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(text || "Ingen valg", center, center);
+  }
 
   function drawWheel() {
+    const items = getItems();
+
+    if (items.length === 0) {
+      drawEmptyWheel(config.emptyWheelText || "Ingen valg");
+      return;
+    }
+
+    const slice = (Math.PI * 2) / items.length;
+
     ctx.clearRect(0, 0, size, size);
 
     for (let i = 0; i < items.length; i++) {
@@ -483,31 +650,21 @@ function createWheel(config) {
       ctx.fill();
 
       ctx.lineWidth = isWinner ? 4 : 1;
-
       ctx.strokeStyle = isWinner
         ? "rgba(255,255,255,0.95)"
         : "rgba(255,255,255,0.35)";
-
       ctx.stroke();
 
       ctx.restore();
 
       ctx.save();
-
       ctx.translate(center, center);
       ctx.rotate(start + slice / 2);
-
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
-
-      ctx.fillStyle = isWinner
-        ? "#111827"
-        : "#1f2937";
-
+      ctx.fillStyle = isWinner ? "#111827" : "#1f2937";
       ctx.font = config.font || "bold 13px Arial";
-
       ctx.fillText(items[i], radius - 16, 0);
-
       ctx.restore();
     }
 
@@ -525,11 +682,19 @@ function createWheel(config) {
   function spin() {
     if (spinning || isAnyWheelSpinning) return;
 
+    const items = getItems();
+
+    if (items.length === 0) {
+      messageEl.textContent = config.emptyMessage || "Ingen tilgjengelige valg";
+      resultEl.textContent = "";
+      drawWheel();
+      return;
+    }
+
     spinning = true;
     btn.disabled = true;
     messageEl.textContent = "";
     resultEl.textContent = "";
-
     winningIndex = null;
 
     drawWheel();
@@ -537,97 +702,72 @@ function createWheel(config) {
     let availableIndexes = items
       .map((item, index) => ({ item, index }))
       .filter(entry => {
-
-        if (config.canvasId !== "nameWheel") {
+        if (!config.preventSameConsecutive) {
           return true;
         }
 
-        const input =
-          document.getElementById("excludedInput").value;
+        const uniqueValues = [...new Set(items)];
 
-        const excludedNames = input
-          .split(",")
-          .map(n => n.trim())
-          .filter(n => n.length > 0);
+        if (uniqueValues.length <= 1 || lastWinningValue === null) {
+          return true;
+        }
 
-        return entry.item !== "Victoria"
-          && !excludedNames.includes(entry.item);
-
+        return entry.item !== lastWinningValue;
       })
       .map(entry => entry.index);
 
     if (availableIndexes.length === 0) {
-      messageEl.textContent = "Ingen tilgjengelige navn";
-      resultEl.textContent = "";
-      spinning = false;
-      btn.disabled = false;
-      return;
+      availableIndexes = items.map((item, index) => index);
     }
 
-    const chosenIndex =
-      availableIndexes[
-        Math.floor(Math.random() * availableIndexes.length)
-      ];
-
+    const chosenIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
     const winner = items[chosenIndex];
 
-    const target =
-      -chosenIndex * slice - slice / 2;
+    const slice = (Math.PI * 2) / items.length;
+    const target = -chosenIndex * slice - slice / 2;
 
-    let delta =
-      normalize(target) - normalize(rotation);
+    let delta = normalize(target) - normalize(rotation);
 
     if (delta < 0) {
       delta += Math.PI * 2;
     }
 
     const duration = 5000;
-
-    const final =
-      rotation + delta + 10 * Math.PI * 2;
-
+    const final = rotation + delta + 10 * Math.PI * 2;
     const start = performance.now();
     const startRot = rotation;
 
     startRouletteSound(duration);
 
     function anim(now) {
-
       let t = (now - start) / duration;
-
       if (t > 1) t = 1;
 
-      rotation =
-        startRot +
-        (final - startRot) * easeOutCubic(t);
-
+      rotation = startRot + (final - startRot) * easeOutCubic(t);
       drawWheel();
 
       if (t < 1) {
-
         requestAnimationFrame(anim);
-
       } else {
-
         rotation = normalize(final);
-
         stopRouletteSound();
 
         winningIndex = chosenIndex;
+        lastWinningValue = winner;
 
         drawWheel();
 
-        messageEl.textContent =
-          "Vi har en vinner!";
-
+        messageEl.textContent = "Vi har en vinner!";
         resultEl.textContent = winner;
 
-        playVictorySound();
+        if (typeof config.onWinner === "function") {
+          config.onWinner(winner);
+        }
 
+        playVictorySound();
         launchConfetti();
 
         spinning = false;
-
         btn.disabled = false;
       }
     }
@@ -636,8 +776,14 @@ function createWheel(config) {
   }
 
   btn.addEventListener("click", spin);
-
   drawWheel();
+
+  return {
+    redraw: function() {
+      winningIndex = null;
+      drawWheel();
+    }
+  };
 }
 
 const springColors = [
@@ -648,85 +794,224 @@ const springColors = [
   "#ccfbf1", "#e9d5ff", "#fed7aa", "#dcfce7"
 ];
 
-createWheel({
+const nameBase = [
+  "Victoria",
+  "Ivar",
+  "Line",
+  "Caroline",
+  "Hans",
+  "Hanna"
+];
+
+const repeatedNameItems = makeRepeatedItems(nameBase, 5);
+const nameStorageKey = "ips-lykkehjul-gjennomfort-navn-v1";
+
+let completedNames = [];
+let completedHistory = [];
+let absentNames = [];
+let nameWheelControl = null;
+
+const absenceListEl = document.getElementById("absenceList");
+const completedListEl = document.getElementById("completedList");
+const completedCounterEl = document.getElementById("completedCounter");
+const undoNameBtn = document.getElementById("undoNameBtn");
+const newNameRoundBtn = document.getElementById("newNameRoundBtn");
+
+function loadNameState() {
+  try {
+    const raw = localStorage.getItem(nameStorageKey);
+    if (!raw) return;
+
+    const data = JSON.parse(raw);
+    const valid = new Set(nameBase.map(normalizeName));
+
+    if (Array.isArray(data.completedNames)) {
+      completedNames = data.completedNames
+        .filter(name => valid.has(normalizeName(name)))
+        .filter((name, index, arr) => arr.findIndex(other => normalizeName(other) === normalizeName(name)) === index);
+    }
+
+    if (Array.isArray(data.completedHistory)) {
+      completedHistory = data.completedHistory.filter(name => valid.has(normalizeName(name)));
+    }
+  } catch (e) {
+    completedNames = [];
+    completedHistory = [];
+  }
+}
+
+function saveNameState() {
+  localStorage.setItem(nameStorageKey, JSON.stringify({
+    completedNames,
+    completedHistory
+  }));
+}
+
+function getNameSet(list) {
+  return new Set(list.map(normalizeName));
+}
+
+function getAvailableNameItems() {
+  const completedSet = getNameSet(completedNames);
+  const absentSet = getNameSet(absentNames);
+
+  return repeatedNameItems.filter(name =>
+    !completedSet.has(normalizeName(name)) &&
+    !absentSet.has(normalizeName(name))
+  );
+}
+
+function addCompletedName(name) {
+  const completedSet = getNameSet(completedNames);
+
+  if (!completedSet.has(normalizeName(name))) {
+    completedNames.push(name);
+    completedHistory.push(name);
+    saveNameState();
+    renderNamePanels();
+  }
+}
+
+function removeCompletedName(name) {
+  const target = normalizeName(name);
+  completedNames = completedNames.filter(item => normalizeName(item) !== target);
+  completedHistory = completedHistory.filter(item => normalizeName(item) !== target);
+  saveNameState();
+  renderNamePanels();
+}
+
+function renderAbsenceList() {
+  const completedSet = getNameSet(completedNames);
+  absenceListEl.innerHTML = "";
+
+  nameBase.forEach(name => {
+    const row = document.createElement("div");
+    row.className = "check-item";
+
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = getNameSet(absentNames).has(normalizeName(name));
+    checkbox.disabled = completedSet.has(normalizeName(name));
+
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        if (!getNameSet(absentNames).has(normalizeName(name))) {
+          absentNames.push(name);
+        }
+      } else {
+        absentNames = absentNames.filter(item => normalizeName(item) !== normalizeName(name));
+      }
+
+      if (nameWheelControl) nameWheelControl.redraw();
+    });
+
+    const text = document.createElement("span");
+    text.textContent = completedSet.has(normalizeName(name)) ? `${name} (gjennomført)` : name;
+
+    label.appendChild(checkbox);
+    label.appendChild(text);
+    row.appendChild(label);
+    absenceListEl.appendChild(row);
+  });
+}
+
+function renderCompletedList() {
+  completedListEl.innerHTML = "";
+  completedCounterEl.textContent = `${completedNames.length}/${nameBase.length}`;
+
+  if (completedNames.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    empty.textContent = "Ingen navn er gjennomført ennå.";
+    completedListEl.appendChild(empty);
+    return;
+  }
+
+  completedNames.forEach(name => {
+    const item = document.createElement("div");
+    item.className = "done-item";
+
+    const span = document.createElement("span");
+    span.textContent = name;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.textContent = "×";
+    removeBtn.title = `Legg ${name} tilbake i hjulet`;
+    removeBtn.addEventListener("click", () => removeCompletedName(name));
+
+    item.appendChild(span);
+    item.appendChild(removeBtn);
+    completedListEl.appendChild(item);
+  });
+}
+
+function renderNamePanels() {
+  renderAbsenceList();
+  renderCompletedList();
+  if (nameWheelControl) nameWheelControl.redraw();
+}
+
+undoNameBtn.addEventListener("click", () => {
+  const last = completedHistory.pop();
+  if (!last) return;
+
+  completedNames = completedNames.filter(name => normalizeName(name) !== normalizeName(last));
+  saveNameState();
+  renderNamePanels();
+});
+
+newNameRoundBtn.addEventListener("click", () => {
+  completedNames = [];
+  completedHistory = [];
+  saveNameState();
+  renderNamePanels();
+});
+
+loadNameState();
+
+nameWheelControl = createWheel({
   canvasId: "nameWheel",
   buttonId: "nameBtn",
   messageId: "nameMessage",
   resultId: "nameResult",
-
-  items: (() => {
-
-    const base = [
-      "Victoria",
-      "Ivar",
-      "Line",
-      "Caroline",
-      "Hans",
-      "Hanna"
-    ];
-
-    const arr = [];
-
-    for (let i = 0; i < 6; i++) {
-      arr.push(...base);
-    }
-
-    return arr;
-  })(),
-
+  items: repeatedNameItems,
+  getItems: getAvailableNameItems,
+  onWinner: addCompletedName,
+  emptyWheelText: "Ingen navn igjen",
+  emptyMessage: "Ingen navn er tilgjengelige",
   colors: springColors,
-
-  font: "bold 20px Arial"
+  font: "bold 13px Arial"
 });
+
+renderNamePanels();
 
 createWheel({
   canvasId: "topicWheel",
   buttonId: "topicBtn",
   messageId: "topicMessage",
   resultId: "topicResult",
-
-  items: (() => {
-
-    const base = [
-      "Jobbstøtteplan",
-      "Karriereprofil",
-      "Åpenhet",
-      "Økonomi",
-      "Samarbeid",
-      "Jobbutvikling"
-    ];
-
-    const arr = [];
-
-    for (let i = 0; i < 4; i++) {
-      arr.push(...base);
-    }
-
-    return arr;
-
-  })(),
-
+  items: makeRepeatedItems([
+    "Jobbstøtteplan",
+    "Karriereprofil",
+    "Åpenhet",
+    "Økonomi",
+    "Samarbeid",
+    "Jobbutvikling"
+  ], 3),
+  preventSameConsecutive: true,
   colors: springColors,
-
   font: "bold 10px Arial"
 });
 
-const randomNumberBtn =
-  document.getElementById("randomNumberBtn");
-
-const randomNumberMessage =
-  document.getElementById("randomNumberMessage");
-
-const randomNumberResult =
-  document.getElementById("randomNumberResult");
+const randomNumberBtn = document.getElementById("randomNumberBtn");
+const randomNumberMessage = document.getElementById("randomNumberMessage");
+const randomNumberResult = document.getElementById("randomNumberResult");
 
 randomNumberBtn.addEventListener("click", () => {
-
-  let min =
-    Number(document.getElementById("minNumber").value);
-
-  let max =
-    Number(document.getElementById("maxNumber").value);
+  let min = Number(document.getElementById("minNumber").value);
+  let max = Number(document.getElementById("maxNumber").value);
 
   min = Math.max(1, Math.min(25, min));
   max = Math.max(1, Math.min(25, max));
@@ -740,19 +1025,14 @@ randomNumberBtn.addEventListener("click", () => {
   document.getElementById("minNumber").value = min;
   document.getElementById("maxNumber").value = max;
 
-  const number =
-    Math.floor(Math.random() * (max - min + 1)) + min;
+  const number = Math.floor(Math.random() * (max - min + 1)) + min;
 
-  randomNumberMessage.textContent =
-    "Tilfeldig tall:";
-
+  randomNumberMessage.textContent = "Tilfeldig tall:";
   randomNumberResult.textContent = number;
 
   playVictorySound();
-
   launchConfetti();
 });
-
 </script>
 
 </body>
