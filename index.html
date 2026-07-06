@@ -10,7 +10,7 @@ html, body {
   margin: 0;
   padding: 0;
   min-height: 100%;
-  font-family: Arial, sans-serif;
+  font-family: "Segoe UI", Arial, sans-serif;
   overflow-x: hidden;
 }
 
@@ -29,18 +29,38 @@ body {
 }
 
 h1 {
-  margin: 0 0 18px;
-  font-size: 34px;
+  margin: 0 0 22px;
+  font-size: 36px;
   text-align: center;
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 18px rgba(255,255,255,0.18);
+}
+
+.version-pill {
+  margin: -10px 0 26px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.78);
+  font-size: 13px;
 }
 
 .wheels-row {
   display: flex;
-  gap: 42px;
+  gap: 52px;
   justify-content: center;
   align-items: flex-start;
   flex-wrap: wrap;
   width: 100%;
+  max-width: 1180px;
+}
+
+.wheel-card-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 14px;
+  color: rgba(255,255,255,0.92);
 }
 
 .wheel-section {
@@ -49,28 +69,39 @@ h1 {
   z-index: 2;
 }
 
+.wheel-section.main-wheel {
+  background: rgba(15, 23, 42, 0.46);
+  border: 1px solid rgba(255,255,255,0.13);
+  border-radius: 28px;
+  padding: 20px 20px 18px;
+  box-shadow: 0 18px 34px rgba(0,0,0,0.24);
+  box-sizing: border-box;
+}
+
 .main-wheel {
-  width: 520px;
-  max-width: 90vw;
+  width: 500px;
+  max-width: 92vw;
 }
 
 .middle-row {
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 24px;
+  margin-top: 30px;
 }
 
 .random-card {
-  width: 360px;
-  max-width: 90vw;
-  background: rgba(15, 23, 42, 0.62);
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 22px;
-  padding: 20px 22px 22px;
+  width: 560px;
+  max-width: 92vw;
+  background:
+    radial-gradient(circle at top left, rgba(126,214,167,0.14), transparent 34%),
+    rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 28px;
+  padding: 24px 28px 26px;
   box-sizing: border-box;
   text-align: center;
-  box-shadow: 0 12px 26px rgba(0,0,0,0.22);
+  box-shadow: 0 18px 34px rgba(0,0,0,0.25);
 }
 
 .small-wheel {
@@ -175,10 +206,17 @@ button:disabled {
   box-sizing: border-box;
   text-align: left;
   box-shadow: 0 12px 26px rgba(0,0,0,0.22);
-  margin-top: 24px;
+  margin-top: 30px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
+}
+
+.panel-section {
+  background: rgba(255,255,255,0.055);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 14px;
 }
 
 .panel-section + .panel-section {
@@ -222,8 +260,8 @@ button:disabled {
   justify-content: space-between;
   gap: 10px;
   border-radius: 14px;
-  background: rgba(255,255,255,0.10);
-  padding: 9px 10px;
+  background: rgba(255,255,255,0.11);
+  padding: 10px 12px;
   font-size: 15px;
 }
 
@@ -296,9 +334,11 @@ button:disabled {
 <div class="page">
 
   <h1>Ukens jobbspor i IPS Midt-Buskerud</h1>
+  <div class="version-pill">v3 · ryddigere layout</div>
 
   <div class="wheels-row">
     <div class="wheel-section main-wheel">
+      <div class="wheel-card-title">Navn</div>
 
       <div class="wheel-wrap">
         <div class="pointer"></div>
@@ -313,6 +353,7 @@ button:disabled {
     </div>
 
     <div class="wheel-section main-wheel">
+      <div class="wheel-card-title">Kategori</div>
 
       <div class="wheel-wrap">
         <div class="pointer"></div>
@@ -330,7 +371,7 @@ button:disabled {
   <div class="middle-row">
     <div class="wheel-section random-card">
 
-      <div style="font-size:22px; font-weight:bold; margin-bottom:18px;">
+      <div style="font-size:24px; font-weight:800; margin-bottom:20px;">
         Tilfeldig tall
       </div>
 
@@ -598,7 +639,7 @@ function createWheel(config) {
   const colors = config.colors;
   const size = canvas.width;
   const center = size / 2;
-  const radius = size * 0.48;
+  const radius = size * 0.495;
 
   let rotation = 0;
   let spinning = false;
@@ -622,7 +663,7 @@ function createWheel(config) {
     ctx.lineWidth = 2;
     ctx.stroke();
     ctx.fillStyle = "rgba(255,255,255,0.82)";
-    ctx.font = "bold 24px Arial";
+    ctx.font = "600 24px Segoe UI";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(text || "Ingen valg", center, center);
@@ -674,8 +715,9 @@ function createWheel(config) {
       ctx.textAlign = "right";
       ctx.textBaseline = "middle";
       ctx.fillStyle = isWinner ? "#111827" : "#1f2937";
-      ctx.font = config.font || "bold 13px Arial";
-      ctx.fillText(items[i], radius - 16, 0);
+      ctx.font = config.font || "600 13px Segoe UI";
+      const labelOffset = config.labelOffset === undefined ? 16 : config.labelOffset;
+      ctx.fillText(items[i], radius - labelOffset, 0);
       ctx.restore();
     }
 
@@ -993,7 +1035,8 @@ nameWheelControl = createWheel({
   emptyWheelText: "Ingen navn igjen",
   emptyMessage: "Ingen navn er tilgjengelige",
   colors: springColors,
-  font: "bold 13px Arial"
+  font: "600 16px Segoe UI",
+  labelOffset: 20
 });
 
 renderNamePanels();
@@ -1010,10 +1053,11 @@ createWheel({
     "Økonomi",
     "Samarbeid",
     "Jobbutvikling"
-  ], 4),
+  ], 3),
   preventSameConsecutive: true,
   colors: springColors,
-  font: "bold 15px Arial"
+  font: "600 14px Segoe UI",
+  labelOffset: 20
 });
 
 const randomNumberBtn = document.getElementById("randomNumberBtn");
