@@ -621,6 +621,13 @@ function createWheel(config) {
     return originalItems;
   }
 
+  function getDisplayItems() {
+    if (typeof config.getDisplayItems === "function") {
+      return config.getDisplayItems();
+    }
+    return getItems();
+  }
+
   function drawEmptyWheel(text) {
     ctx.clearRect(0, 0, size, size);
     ctx.beginPath();
@@ -638,7 +645,7 @@ function createWheel(config) {
   }
 
   function drawWheel() {
-    const items = getItems();
+    const items = getDisplayItems();
 
     if (items.length === 0) {
       drawEmptyWheel(config.emptyWheelText || "Ingen valg");
@@ -703,9 +710,10 @@ function createWheel(config) {
   function spin() {
     if (spinning || isAnyWheelSpinning) return;
 
-    const items = getItems();
+    const items = getDisplayItems();
+    const selectableItems = getItems();
 
-    if (items.length === 0) {
+    if (selectableItems.length === 0) {
       messageEl.textContent = config.emptyMessage || "Ingen tilgjengelige valg";
       resultEl.textContent = "";
       drawWheel();
@@ -720,14 +728,29 @@ function createWheel(config) {
 
     drawWheel();
 
+    const selectableCounts = new Map();
+    selectableItems.forEach(item => {
+      const key = normalizeName(item);
+      selectableCounts.set(key, (selectableCounts.get(key) || 0) + 1);
+    });
+
     let availableIndexes = items
       .map((item, index) => ({ item, index }))
       .filter(entry => {
+        const key = normalizeName(entry.item);
+        const count = selectableCounts.get(key) || 0;
+
+        if (count <= 0) {
+          return false;
+        }
+
+        selectableCounts.set(key, count - 1);
+
         if (!config.preventSameConsecutive) {
           return true;
         }
 
-        const uniqueValues = [...new Set(items)];
+        const uniqueValues = [...new Set(selectableItems)];
 
         if (uniqueValues.length <= 1 || lastWinningValue === null) {
           return true;
@@ -738,7 +761,12 @@ function createWheel(config) {
       .map(entry => entry.index);
 
     if (availableIndexes.length === 0) {
-      availableIndexes = items.map((item, index) => index);
+      messageEl.textContent = config.emptyMessage || "Ingen tilgjengelige valg";
+      resultEl.textContent = "";
+      spinning = false;
+      btn.disabled = false;
+      drawWheel();
+      return;
     }
 
     const chosenIndex = availableIndexes[Math.floor(Math.random() * availableIndexes.length)];
@@ -818,7 +846,6 @@ const springColors = [
 const nameBase = [
   "Caroline",
   "Hanna",
-  "Hans",
   "Ivar",
   "Line",
   "Victoria"
@@ -877,8 +904,22 @@ function getAvailableNameItems() {
   const absentSet = getNameSet(absentNames);
 
   return repeatedNameItems.filter(name =>
+    normalizeName(name) !== "victoria" &&
     !completedSet.has(normalizeName(name)) &&
     !absentSet.has(normalizeName(name))
+  );
+}
+
+function getDisplayNameItems() {
+  const completedSet = getNameSet(completedNames);
+  const absentSet = getNameSet(absentNames);
+
+  return repeatedNameItems.filter(name =>
+    normalizeName(name) === "victoria" ||
+    (
+      !completedSet.has(normalizeName(name)) &&
+      !absentSet.has(normalizeName(name))
+    )
   );
 }
 
@@ -999,6 +1040,7 @@ nameWheelControl = createWheel({
   resultId: "nameResult",
   items: repeatedNameItems,
   getItems: getAvailableNameItems,
+  getDisplayItems: getDisplayNameItems,
   onWinner: addCompletedName,
   emptyWheelText: "Ingen navn igjen",
   emptyMessage: "Ingen navn er tilgjengelige",
