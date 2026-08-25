@@ -930,7 +930,12 @@ function addCompletedName(name) {
     completedNames.push(name);
     completedHistory.push(name);
     saveNameState();
-    renderNamePanels();
+
+    // Oppdater listene, men IKKE tegn navnehjulet på nytt akkurat nå.
+    // Hjulet er allerede tegnet med vinnerfeltet under pilen. Hvis vi
+    // tegner på nytt etter at vinneren er fjernet fra tilgjengelige navn,
+    // forskyves alle feltene og pilen ser ut til å peke på feil navn.
+    renderNamePanels(false);
   }
 }
 
@@ -1009,10 +1014,10 @@ function renderCompletedList() {
   });
 }
 
-function renderNamePanels() {
+function renderNamePanels(redrawWheel = true) {
   renderAbsenceList();
   renderCompletedList();
-  if (nameWheelControl) nameWheelControl.redraw();
+  if (redrawWheel && nameWheelControl) nameWheelControl.redraw();
 }
 
 undoNameBtn.addEventListener("click", () => {
