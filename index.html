@@ -337,6 +337,10 @@ button:disabled {
     </div>
   </div>
 
+  <div style="width:100%; display:flex; justify-content:center; margin-top:18px;">
+    <button id="bothBtn" style="font-size:19px; padding:14px 34px;">Snurr navn + tema samtidig</button>
+  </div>
+
   <div class="middle-row">
     <div class="wheel-section random-card">
 
@@ -707,8 +711,8 @@ function createWheel(config) {
     ctx.fill();
   }
 
-  function spin() {
-    if (spinning || isAnyWheelSpinning) return;
+  function spin(allowParallel = false) {
+    if (spinning || (isAnyWheelSpinning && !allowParallel)) return;
 
     const items = getDisplayItems();
     const selectableItems = getItems();
@@ -828,6 +832,7 @@ function createWheel(config) {
   drawWheel();
 
   return {
+    spin: spin,
     redraw: function() {
       winningIndex = null;
       drawWheel();
@@ -1056,7 +1061,7 @@ nameWheelControl = createWheel({
 
 renderNamePanels();
 
-createWheel({
+const topicWheelControl = createWheel({
   canvasId: "topicWheel",
   buttonId: "topicBtn",
   messageId: "topicMessage",
@@ -1073,6 +1078,15 @@ createWheel({
   colors: springColors,
   font: "600 15px Segoe UI, Arial",
   labelOffset: 20
+});
+
+const bothBtn = document.getElementById("bothBtn");
+bothBtn.addEventListener("click", () => {
+  if (isAnyWheelSpinning) return;
+  // Start both in the same event loop. The second wheel is explicitly
+  // allowed to run in parallel with the first.
+  nameWheelControl.spin(true);
+  topicWheelControl.spin(true);
 });
 
 const randomNumberBtn = document.getElementById("randomNumberBtn");
